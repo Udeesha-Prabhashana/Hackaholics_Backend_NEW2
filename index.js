@@ -1,13 +1,13 @@
-import express from "express";
+const express = require("express");
 import cors from "cors";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
+require("dotenv").config();
 // import teamRoute from "./Routes/team.js";
-import Team from "../Models/TeamRegistration.js";
+// import Team from "../Models/TeamRegistration.js";
+const Team = require("../Models/TeamRegistration.js");
 
 
 import cookieParser from "cookie-parser";
-dotenv.config();
 
 const ORIGIN = process.env.ORIGIN;
 const PORT = process.env.PORT;;
@@ -34,28 +34,7 @@ app.get("/", (req ,res) => {
 
 app.post("/api/teamregi/register", async (req, res) => {
   try {
-    // Validate request body
-    const requiredFields = [
-      "teamName",
-      "university",
-      "leaderName",
-      "leaderEmail",
-    ];
-    const missingFields = requiredFields.filter(
-      (field) => !(field in req.body)
-    );
-
-    if (missingFields.length > 0) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: `Missing required fields: ${missingFields.join(", ")}`,
-        });
-    }
-
-    // Create a new team instance
-    const newTeam = new Team({
+    const newSession = new Team({
       teamName: req.body.teamName,
       university: req.body.university,
       other: req.body.other,
@@ -75,23 +54,17 @@ app.post("/api/teamregi/register", async (req, res) => {
       member2Email: req.body.member2Email,
       member2NIC: req.body.member2NIC,
     });
+    await newSession.save();
 
-    // Save the new team to the database
-    await newTeam.save();
-
-    // Send success response
     res.status(200).json({
       success: true,
       message: "Team Registered Successfully",
     });
   } catch (err) {
-    // Log the error for debugging purposes
-    console.error(err);
-    // Send an error response
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res.send(err);
+    console.log(err);
   }
 });
-
 
 const connect = async () => {
   try {
